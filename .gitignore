@@ -1,0 +1,16 @@
+# Real config — contains org topology (hostnames, service names, email addresses).
+# Copy support-ticket-resolver-config.example.json → support-ticket-resolver-config.json
+# and fill in your values. Never commit the real config.
+support-ticket-resolver-config.json
+
+# Environment variables — contain credentials and connection strings
+.env
+.env.local
+.env.*.local
+
+# Agent session memory
+.claude/agent-memory/
+
+# Editor and OS
+.DS_Store
+Thumbs.db

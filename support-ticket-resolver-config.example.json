@@ -1,0 +1,130 @@
+{
+  "configVersion": "1.0.0",
+  "mcp": {
+    "atlassian": {
+      "enabled": true,
+      "toolPrefix": "mcp__claude_ai_Atlassian"
+    },
+    "github": {
+      "enabled": false,
+      "toolPrefix": "mcp__github"
+    }
+  },
+  "jira": {
+    "enabled": true,
+    "baseUrl": "https://your-org.atlassian.net",
+    "project": "APP",
+    "apiTokenEnvVar": "JIRA_API_TOKEN",
+    "userEmail": "you@your-org.com"
+  },
+  "github": {
+    "enabled": true,
+    "org": "your-github-org",
+    "defaultBaseBranch": "main",
+    "apiTokenEnvVar": "GITHUB_TOKEN",
+    "reviewerMap": [
+      { "jiraEmail": "alice@your-org.com", "githubHandle": "alice-gh" },
+      { "jiraEmail": "bob@your-org.com",   "githubHandle": "bob-gh" }
+    ],
+    "serviceRepoMap": [
+      {
+        "service": "payment-service",
+        "repo": "payments-api",
+        "path": "/"
+      },
+      {
+        "service": "user-service",
+        "repo": "user-management",
+        "path": "/"
+      }
+    ]
+  },
+  "observability": {
+    "newRelic": {
+      "enabled": true,
+      "accountId": "YOUR_NR_ACCOUNT_ID",
+      "apiKeyEnvVar": "NEW_RELIC_API_KEY"
+    },
+    "azureAppInsights": {
+      "enabled": false,
+      "appId": "YOUR_AI_APP_ID",
+      "apiKeyEnvVar": "AZURE_AI_API_KEY"
+    },
+    "cloudwatch": {
+      "enabled": false,
+      "region": "us-east-1",
+      "accessKeyIdEnvVar": "AWS_ACCESS_KEY_ID",
+      "secretAccessKeyEnvVar": "AWS_SECRET_ACCESS_KEY",
+      "sessionTokenEnvVar": "AWS_SESSION_TOKEN",
+      "serviceLogGroupMap": [
+        {
+          "service": "payment-service",
+          "logGroups": [
+            "/aws/ecs/payment-service",
+            "/aws/lambda/payment-processor"
+          ]
+        }
+      ]
+    }
+  },
+  "knowledgebase": {
+    "enabled": true,
+    "platform": "confluence",
+    "confluence": {
+      "baseUrl": "https://your-org.atlassian.net/wiki",
+      "spaceKey": "ENG",
+      "apiTokenEnvVar": "CONFLUENCE_API_TOKEN",
+      "userEmail": "you@your-org.com"
+    },
+    "sharepoint": {
+      "tenantId": "YOUR_TENANT_ID",
+      "siteUrl": "https://your-org.sharepoint.com/sites/engineering",
+      "clientIdEnvVar": "SHAREPOINT_CLIENT_ID",
+      "clientSecretEnvVar": "SHAREPOINT_CLIENT_SECRET"
+    }
+  },
+  "notifications": {
+    "enabled": false,
+    "channels": [
+      {
+        "type": "slack",
+        "name": "oncall-alerts",
+        "webhookEnvVar": "SLACK_WEBHOOK_URL",
+        "events": ["completion", "failure"]
+      },
+      {
+        "type": "teams",
+        "name": "engineering-alerts",
+        "webhookEnvVar": "TEAMS_WEBHOOK_URL",
+        "events": ["failure"]
+      }
+    ]
+  },
+  "database": {
+    "enabled": false,
+    "allowedEnvironments": ["staging"],
+    "maxQueryTimeoutSeconds": 5,
+    "connections": [
+      {
+        "label": "payments-db-staging",
+        "service": "payment-service",
+        "engine": "postgres",
+        "host": "payments-db-staging.internal",
+        "port": 5432,
+        "database": "payments",
+        "readOnly": true,
+        "connectionStringEnvVar": "PAYMENTS_DB_READONLY_URL"
+      },
+      {
+        "label": "users-db-staging",
+        "service": "user-service",
+        "engine": "mysql",
+        "host": "users-db-staging.internal",
+        "port": 3306,
+        "database": "users",
+        "readOnly": true,
+        "connectionStringEnvVar": "USERS_DB_READONLY_URL"
+      }
+    ]
+  }
+}

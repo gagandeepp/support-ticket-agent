@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "support-ticket-resolver-config.schema.json",
+  "title": "Support Ticket Resolver Config",
+  "description": "Configuration schema for the support-ticket-resolver agent. Validate before running the workflow.",
+  "type": "object",
+  "required": ["configVersion", "mcp", "jira", "github"],
+  "additionalProperties": false,
+  "properties": {
+    "configVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the config schema. Current required value: 1.0.0. If this does not match, the agent must flag a stale config and stop."
+    },
+    "mcp": {
+      "type": "object",
+      "required": ["atlassian", "github"],
+      "additionalProperties": false,
+      "properties": {
+        "atlassian": {
+          "type": "object",
+          "required": ["enabled", "toolPrefix"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "toolPrefix": { "type": "string", "minLength": 1 }
+          }
+        },
+        "github": {
+          "type": "object",
+          "required": ["enabled", "toolPrefix"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "toolPrefix": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "jira": {
+      "type": "object",
+      "required": ["enabled", "baseUrl", "project", "apiTokenEnvVar", "userEmail"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "baseUrl": { "type": "string", "format": "uri" },
+        "project": { "type": "string", "minLength": 1 },
+        "apiTokenEnvVar": { "type": "string", "minLength": 1 },
+        "userEmail": { "type": "string", "format": "email" }
+      }
+    },
+    "github": {
+      "type": "object",
+      "required": ["enabled", "org", "defaultBaseBranch", "apiTokenEnvVar"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "org": { "type": "string", "minLength": 1 },
+        "defaultBaseBranch": { "type": "string", "minLength": 1 },
+        "apiTokenEnvVar": { "type": "string", "minLength": 1 },
+        "reviewerMap": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["jiraEmail", "githubHandle"],
+            "additionalProperties": false,
+            "properties": {
+              "jiraEmail": { "type": "string", "format": "email" },
+              "githubHandle": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "serviceRepoMap": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["service", "repo", "path"],
+            "additionalProperties": false,
+            "properties": {
+              "service": { "type": "string", "minLength": 1 },
+              "repo": { "type": "string", "minLength": 1 },
+              "path": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "newRelic": {
+          "type": "object",
+          "required": ["enabled", "accountId", "apiKeyEnvVar"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "accountId": { "type": "string", "minLength": 1 },
+            "apiKeyEnvVar": { "type": "string", "minLength": 1 }
+          }
+        },
+        "azureAppInsights": {
+          "type": "object",
+          "required": ["enabled", "appId", "apiKeyEnvVar"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "appId": { "type": "string", "minLength": 1 },
+            "apiKeyEnvVar": { "type": "string", "minLength": 1 }
+          }
+        },
+        "cloudwatch": {
+          "type": "object",
+          "required": ["enabled", "region", "accessKeyIdEnvVar", "secretAccessKeyEnvVar"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "region": { "type": "string", "minLength": 1 },
+            "accessKeyIdEnvVar": { "type": "string", "minLength": 1 },
+            "secretAccessKeyEnvVar": { "type": "string", "minLength": 1 },
+            "sessionTokenEnvVar": { "type": "string", "minLength": 1 },
+            "serviceLogGroupMap": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["service", "logGroups"],
+                "additionalProperties": false,
+                "properties": {
+                  "service": { "type": "string", "minLength": 1 },
+                  "logGroups": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string", "minLength": 1 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "knowledgebase": {
+      "type": "object",
+      "required": ["enabled", "platform"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "platform": { "type": "string", "enum": ["confluence", "sharepoint"] },
+        "confluence": {
+          "type": "object",
+          "required": ["baseUrl", "spaceKey", "apiTokenEnvVar", "userEmail"],
+          "additionalProperties": false,
+          "properties": {
+            "baseUrl": { "type": "string", "format": "uri" },
+            "spaceKey": { "type": "string", "minLength": 1 },
+            "apiTokenEnvVar": { "type": "string", "minLength": 1 },
+            "userEmail": { "type": "string", "format": "email" }
+          }
+        },
+        "sharepoint": {
+          "type": "object",
+          "required": ["tenantId", "siteUrl", "clientIdEnvVar", "clientSecretEnvVar"],
+          "additionalProperties": false,
+          "properties": {
+            "tenantId": { "type": "string", "minLength": 1 },
+            "siteUrl": { "type": "string", "format": "uri" },
+            "clientIdEnvVar": { "type": "string", "minLength": 1 },
+            "clientSecretEnvVar": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "notifications": {
+      "type": "object",
+      "required": ["enabled"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "name", "webhookEnvVar", "events"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "type": "string", "enum": ["slack", "teams"] },
+              "name": { "type": "string", "minLength": 1 },
+              "webhookEnvVar": { "type": "string", "minLength": 1 },
+              "events": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "enum": ["completion", "failure"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Agent self-metrics persistence. Controls local file output and optional push to external sinks.",
+      "required": ["enabled"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Master switch. When false, neither local files nor external push are written."
+        },
+        "tokenBudget": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Override the default token budget (200000) used for token tracking in audit events."
+        },
+        "mongodb": {
+          "type": "object",
+          "description": "Push each run's metrics document to MongoDB after the run completes.",
+          "required": ["enabled", "connectionStringEnvVar", "database", "collection"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "connectionStringEnvVar": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Name of the env var holding the MongoDB connection string. The user named in the connection string must have insertOne permission on the target collection."
+            },
+            "database": {
+              "type": "string",
+              "minLength": 1,
+              "description": "MongoDB database name where metrics documents are stored."
+            },
+            "collection": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Collection name for agent run metrics. Recommended: agent_runs."
+            }
+          }
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "required": ["enabled", "allowedEnvironments", "maxQueryTimeoutSeconds", "connections"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "allowedEnvironments": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "maxQueryTimeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "service", "engine", "host", "port", "database", "readOnly", "connectionStringEnvVar"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "service": { "type": "string", "minLength": 1 },
+              "engine": {
+                "type": "string",
+                "enum": ["postgres", "mysql", "mssql", "mongodb"]
+              },
+              "host": { "type": "string", "minLength": 1 },
+              "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+              "database": { "type": "string", "minLength": 1 },
+              "readOnly": {
+                "type": "boolean",
+                "const": true,
+                "description": "Must always be true. The agent refuses to connect to non-read-only databases."
+              },
+              "connectionStringEnvVar": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

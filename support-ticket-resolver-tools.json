@@ -1,0 +1,102 @@
+{
+  "core": {
+    "description": "Always active — no config flag required",
+    "tools": ["Read", "Write", "Edit", "Bash", "WebFetch", "Agent"]
+  },
+  "jira": {
+    "description": "Jira ticket ingestion, search, comment, and transition",
+    "configPath": "jira.enabled",
+    "tools": [
+      "mcp__claude_ai_Atlassian__getJiraIssue",
+      "mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql",
+      "mcp__claude_ai_Atlassian__editJiraIssue",
+      "mcp__claude_ai_Atlassian__addCommentToJiraIssue",
+      "mcp__claude_ai_Atlassian__transitionJiraIssue",
+      "mcp__claude_ai_Atlassian__getTransitionsForJiraIssue",
+      "mcp__claude_ai_Atlassian__getJiraIssueTypeMetaWithFields"
+    ]
+  },
+  "github": {
+    "description": "Repo lookup, branch creation, and PR creation via GitHub REST API",
+    "configPath": "github.enabled",
+    "tools": ["WebFetch", "Bash"],
+    "notes": "WebFetch drives the GitHub REST API; Bash handles git clone/checkout/push"
+  },
+  "observability_newrelic": {
+    "description": "New Relic log and metric queries via NerdGraph GraphQL API",
+    "configPath": "observability.newRelic.enabled",
+    "tools": ["WebFetch"],
+    "notes": "POST to https://api.newrelic.com/graphql with NRQL queries"
+  },
+  "observability_azure": {
+    "description": "Azure Application Insights KQL queries via Azure Monitor REST API",
+    "configPath": "observability.azureAppInsights.enabled",
+    "tools": ["WebFetch"],
+    "notes": "POST to https://api.applicationinsights.io/v1/apps/{appId}/query"
+  },
+  "observability_cloudwatch": {
+    "description": "AWS CloudWatch Logs Insights queries via AWS CLI",
+    "configPath": "observability.cloudwatch.enabled",
+    "tools": ["Bash"],
+    "preflightCommands": {
+      "credentialCheck": "aws sts get-caller-identity --region ${region}",
+      "permissionCheck": "aws logs describe-log-groups --max-items 1 --region ${region}"
+    },
+    "queryCommands": {
+      "startQuery":  "aws logs start-query --log-group-names ${logGroups} --start-time ${startEpoch} --end-time ${endEpoch} --query-string '${query}' --region ${region}",
+      "pollResults": "aws logs get-query-results --query-id ${queryId} --region ${region}"
+    },
+    "requiredIamPermissions": [
+      "logs:DescribeLogGroups",
+      "logs:StartQuery",
+      "logs:GetQueryResults",
+      "logs:FilterLogEvents",
+      "logs:StopQuery"
+    ],
+    "notes": "Uses AWS CLI via Bash. Credentials resolved from env vars (AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY) or AWS_SESSION_TOKEN for assumed roles. Service-to-log-group mapping read from observability.cloudwatch.serviceLogGroupMap."
+  },
+  "knowledgebase_confluence": {
+    "description": "Confluence page search and full-page fetch",
+    "configPath": "knowledgebase.enabled",
+    "configCondition": "knowledgebase.platform == 'confluence'",
+    "tools": [
+      "mcp__claude_ai_Atlassian__searchConfluenceUsingCql",
+      "mcp__claude_ai_Atlassian__getConfluencePage",
+      "mcp__claude_ai_Atlassian__getConfluenceSpaces",
+      "mcp__claude_ai_Atlassian__getPagesInConfluenceSpace",
+      "mcp__claude_ai_Atlassian__getConfluencePageDescendants",
+      "mcp__claude_ai_Atlassian__getConfluencePageFooterComments"
+    ]
+  },
+  "knowledgebase_sharepoint": {
+    "description": "SharePoint document search and fetch via Microsoft Graph API",
+    "configPath": "knowledgebase.enabled",
+    "configCondition": "knowledgebase.platform == 'sharepoint'",
+    "tools": ["WebFetch"],
+    "notes": "POST to https://graph.microsoft.com/v1.0/search/query; auth via Azure AD client-credentials grant"
+  },
+  "knowledgebase_publish": {
+    "description": "Publish the RCA document to the configured knowledgebase at the end of the workflow",
+    "configPath": "knowledgebase.enabled",
+    "tools": ["WebFetch"],
+    "mcpTools": {
+      "confluence": [
+        "mcp__claude_ai_Atlassian__createConfluencePage",
+        "mcp__claude_ai_Atlassian__updateConfluencePage"
+      ]
+    },
+    "notes": "Confluence: use MCP createConfluencePage if mcp.atlassian.enabled, else REST POST /wiki/rest/api/content. SharePoint: always WebFetch via Microsoft Graph PUT /drive/root:<path>:/content. Publish failure is non-fatal — report and continue."
+  },
+  "database": {
+    "description": "Read-only queries across one or more DB servers for RCA evidence",
+    "configPath": "database.enabled",
+    "tools": ["Bash"],
+    "engines": {
+      "postgres": "psql \"$CONNECTION_STRING\" -v ON_ERROR_STOP=1 -c \"SET statement_timeout='${maxQueryTimeoutSeconds}s'; <query>\"",
+      "mysql":    "mysql \"$CONNECTION_STRING\" --connect-timeout=${maxQueryTimeoutSeconds} --max-execution-time=$((maxQueryTimeoutSeconds*1000)) -e \"<query>\"",
+      "mssql":    "sqlcmd -S $HOST,$PORT -d $DATABASE -U $USER -P $PASS -t ${maxQueryTimeoutSeconds} -Q \"<query>\"",
+      "mongodb":  "mongosh \"$CONNECTION_STRING\" --eval \"db.<collection>.find(<query>).maxTimeMS(${maxQueryTimeoutMs})\""
+    },
+    "notes": "All engines use Bash (already in core). readOnly must be true per connection. allowedEnvironments is checked globally before querying any connection. One connection entry per server — add as many as needed."
+  }
+}

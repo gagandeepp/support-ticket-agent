@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "Atlassian": {
+      "_comment": "Atlassian Remote MCP Server — OAuth-based, hosted by Atlassian/claude.ai. No local process needed. Enable via claude.ai Settings > Integrations > Atlassian. When enabled, tool prefix is 'mcp__claude_ai_Atlassian'. For a self-hosted Atlassian MCP server, replace command/args below and update mcp.atlassian.toolPrefix in support-ticket-resolver-config.json.",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@atlassian/mcp-atlassian"],
+      "env": {
+        "ATLASSIAN_URL": "${JIRA_BASE_URL}",
+        "ATLASSIAN_USER_EMAIL": "${JIRA_USER_EMAIL}",
+        "ATLASSIAN_API_TOKEN": "${JIRA_API_TOKEN}"
+      }
+    },
+    "github": {
+      "_comment": "Official GitHub MCP Server — runs locally via Docker or npx. Provides tools for repos, PRs, issues, and commits. When enabled, tool prefix is 'mcp__github'.",
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
+}
